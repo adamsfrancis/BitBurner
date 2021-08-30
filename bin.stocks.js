@@ -58,7 +58,7 @@ const object_constants = {
 	array_identifier_files_required: ["lib."],
 	object_document: parent["document"],
 	object_storage: parent["window"].localStorage,
-	string_prefix: "nicoty_stocks_",
+	string_prefix: "stocks_",
 	get string_property_investment_capital() {
 		return this.string_prefix + "float_investment_capital";
 	},

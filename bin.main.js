@@ -592,15 +592,15 @@ OPTIONS
 		});
 		// Set options for the hacking script.
 		const object_document = parent["document"];
-		object_document.nicoty_hacker_string_server_target_manual = string_server_target;
-		object_document.nicoty_hacker_boolean_method_score_correction = boolean_method_score_correction;
-		object_document.nicoty_hacker_float_multiplier_factor_skill = float_multiplier_factor_skill;
-		object_document.nicoty_hacker_float_multiplier_factor_max_cash = float_multiplier_factor_max_cash;
-		object_document.nicoty_hacker_float_multiplier_factor_growth = float_multiplier_factor_growth;
-		object_document.nicoty_hacker_integer_job_cap = integer_job_cap;
-		object_document.nicoty_hacker_float_precision = float_precision;
-		object_document.nicoty_hacker_float_steal_cap = float_steal_cap;
-		object_document.nicoty_hacker_float_padding = float_padding;
+		object_document.hacker_string_server_target_manual = string_server_target;
+		object_document.hacker_boolean_method_score_correction = boolean_method_score_correction;
+		object_document.hacker_float_multiplier_factor_skill = float_multiplier_factor_skill;
+		object_document.hacker_float_multiplier_factor_max_cash = float_multiplier_factor_max_cash;
+		object_document.hacker_float_multiplier_factor_growth = float_multiplier_factor_growth;
+		object_document.hacker_integer_job_cap = integer_job_cap;
+		object_document.hacker_float_precision = float_precision;
+		object_document.hacker_float_steal_cap = float_steal_cap;
+		object_document.hacker_float_padding = float_padding;
 		// Spawn the hacking script.
 		object_netscript.spawn(object_helpers.string_hacker, 1);
 	};

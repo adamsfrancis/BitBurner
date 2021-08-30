@@ -26,7 +26,7 @@ const object_constants = {
 	object_argument_names: {
 		help: { short: "h", long: "help" },
 	},
-	string_prefix: "nicoty_stocks_",
+	string_prefix: "stocks_",
 	get string_property_investment_capital() {
 		return this.string_prefix + "float_investment_capital";
 	},
@@ -229,27 +229,27 @@ FLAGS
 		});
 		object_get_button_toggle({
 			string_id: "trade",
-			boolean_condition: () => object_document.nicoty_stocks_boolean_trade,
+			boolean_condition: () => object_document.stocks_boolean_trade,
 			void_function: (boolean_condition) => {
-				object_document.nicoty_stocks_boolean_trade = boolean_condition;
+				object_document.stocks_boolean_trade = boolean_condition;
 			},
 			string_text_true: "Trading",
 			string_text_false: "Not Trading",
 		});
 		object_get_button_toggle({
 			string_id: "sell_profitable",
-			boolean_condition: () => object_document.nicoty_stocks_boolean_sell_profitable,
+			boolean_condition: () => object_document.stocks_boolean_sell_profitable,
 			void_function: (boolean_condition) => {
-				object_document.nicoty_stocks_boolean_sell_profitable = boolean_condition;
+				object_document.stocks_boolean_sell_profitable = boolean_condition;
 			},
 			string_text_true: "Selling When Profitable",
 			string_text_false: "Not Selling When Profitable",
 		});
 		object_get_button_toggle({
 			string_id: "sell_profitable",
-			boolean_condition: () => object_document.nicoty_stocks_boolean_sell_asap,
+			boolean_condition: () => object_document.stocks_boolean_sell_asap,
 			void_function: (boolean_condition) => {
-				object_document.nicoty_stocks_boolean_sell_asap = boolean_condition;
+				object_document.stocks_boolean_sell_asap = boolean_condition;
 			},
 			string_text_true: "Selling ASAP",
 			string_text_false: "Not Selling ASAP",

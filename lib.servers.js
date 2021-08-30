@@ -20,10 +20,10 @@ export const array_get_servers = ({
 }) => {
 	const object_document = parent["document"];
 	if (
-		Array.isArray(object_document.nicoty_array_servers) &&
-		object_document.nicoty_array_servers.length > 0
+		Array.isArray(object_document.array_servers) &&
+		object_document.array_servers.length > 0
 	) {
-		return object_document.nicoty_array_servers;
+		return object_document.array_servers;
 	} else {
 		const array_found_new = f
 			// Find new servers
@@ -40,8 +40,8 @@ export const array_get_servers = ({
 			);
 		if (0 === array_found_new.length) {
 			// No new servers found, cache and return the array.
-			object_document.nicoty_array_servers = v.concat(f);
-			return object_document.nicoty_array_servers;
+			object_document.array_servers = v.concat(f);
+			return object_document.array_servers;
 		}
 		// New servers found, keep recursing.
 		return array_get_servers({

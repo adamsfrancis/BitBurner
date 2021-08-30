@@ -82,7 +82,7 @@
 		object_document: parent["document"],
 		object_storage: parent["window"].localStorage,
 		string_server_home: "home",
-		string_prefix: "nicoty_stocks_",
+		string_prefix: "stocks_",
 		get string_prefix_stock() {
 			return this.string_prefix + "object_stock_";
 		},

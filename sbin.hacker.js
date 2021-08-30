@@ -1238,36 +1238,36 @@ export const main = async (object_netscript) => {
 		for (;;) {
 			// Select a target server if there isn't one.
 			const string_server_target =
-				"" === object_document.nicoty_hacker_string_server_target_manual
+				"" === object_document.hacker_string_server_target_manual
 					? string_or_null_get_server_hackable_score_best({
 							boolean_method_score_correction:
-								object_document.nicoty_hacker_boolean_method_score_correction,
+								object_document.hacker_boolean_method_score_correction,
 							float_multiplier_factor_skill:
-								object_document.nicoty_hacker_float_multiplier_factor_skill,
+								object_document.hacker_float_multiplier_factor_skill,
 							float_multiplier_factor_max_cash:
-								object_document.nicoty_hacker_float_multiplier_factor_max_cash,
+								object_document.hacker_float_multiplier_factor_max_cash,
 							float_multiplier_factor_growth:
-								object_document.nicoty_hacker_float_multiplier_factor_growth,
+								object_document.hacker_float_multiplier_factor_growth,
 						})
-					: object_document.nicoty_hacker_string_server_target_manual;
+					: object_document.hacker_string_server_target_manual;
 			// Tell the cyclic weaken script what the target server is.
-			object_document.nicoty_hacker_string_server_target_actual = string_server_target;
+			object_document.hacker_string_server_target_actual = string_server_target;
 			// If this isn't the first iteration of the loop, sleep for the duration of paddings of the previous schedule.
 			if (0 < object_schedule.array_schedule.length) {
 				await object_netscript.sleep(
 					object_schedule.array_schedule.length *
-						object_document.nicoty_hacker_float_padding -
+						object_document.hacker_float_padding -
 						integer_time_start +
 						Date.now()
 				);
 			}
 			integer_time_start = Date.now();
 			object_schedule = object_get_schedule_hacking({
-				integer_job_cap: object_document.nicoty_hacker_integer_job_cap,
-				float_precision: object_document.nicoty_hacker_float_precision,
-				float_steal_cap: object_document.nicoty_hacker_float_steal_cap,
+				integer_job_cap: object_document.hacker_integer_job_cap,
+				float_precision: object_document.hacker_float_precision,
+				float_steal_cap: object_document.hacker_float_steal_cap,
 				float_padding_seconds:
-					object_document.nicoty_hacker_float_padding / 1e3,
+					object_document.hacker_float_padding / 1e3,
 				string_server_target: string_server_target,
 				object_schedule_hacking_previous: object_schedule,
 			});
@@ -1293,7 +1293,7 @@ export const main = async (object_netscript) => {
 						}
 					)
 				: await object_netscript.sleep(
-						object_document.nicoty_hacker_float_padding
+						object_document.hacker_float_padding
 					);
 		}
 	};
