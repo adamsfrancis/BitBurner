@@ -17,7 +17,7 @@ from "lib.root.js";
 export const float_get_server_ram_total = ({
 	object_netscript: n,
 	string_server: s,
-}) => n.getServerRam(s)[0];
+}) => n.getServerMaxRam(s);
 
 /**
  * @description Returns the used RAM of a server.
@@ -29,7 +29,7 @@ export const float_get_server_ram_total = ({
 export const float_get_server_ram_used = ({
 	object_netscript: n,
 	string_server: s,
-}) => n.getServerRam(s)[1];
+}) => n.getServerUsedRam(s);
 
 /**
  * @description Returns the available RAM of a server.
