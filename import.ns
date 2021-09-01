@@ -1,0 +1,32 @@
+let ROOT_URL = 'https://raw.githubusercontent.com/adamsfrancis/BitBurner/master/'
+const files = [
+    'preSingHack.ns',
+
+];
+/*
+ * This will import all files listed in importFiles.
+ */
+export async function main(ns) {
+    // TODO: First import the import script and run it seperately
+    const filesImported = await importFiles(ns);
+    ns.tprint('='.repeat(20));
+    if (filesImported) {
+        ns.tprint('Import Complete');
+    }
+    else {
+        ns.tprint('You had some issues downloading files, please check your scripts and config.');
+    }
+}
+async function importFiles(ns) {
+    if (!files) {
+        throw new Error('No files found.');
+    }
+    let filesImported = true;
+    for (const file of files) {
+        const remoteFileName = `${ROOT_URL}/${file}`;
+        const result = await ns.wget(remoteFileName, `/${file}`);
+        filesImported = filesImported && result;
+        ns.tprint(`File: ${file}: ${result ? '✔️' : '❌'}`);
+    }
+    return filesImported;
+}
