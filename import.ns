@@ -1,6 +1,7 @@
 let ROOT_URL = 'https://raw.githubusercontent.com/adamsfrancis/BitBurner/master/'
 const files = [
     'preSingHack.ns',
+    'ninja.ns',
     'reference/browserAutoHack.js',
     'reference/commitCrime.ns',
     'reference/common.ns',
