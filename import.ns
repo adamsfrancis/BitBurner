@@ -11,8 +11,8 @@ const files = [
     'reference/gangManager.ns',
     'reference/getCrimesData.ns',
     'reference/getCrimesData2.ns.js',
-    'reference/grow.ns',
-    'reference/hack.ns',
+    'grow.ns',
+    'hack.ns',
     'reference/hackingMission.js',
     'reference/initHacking.ns',
     'reference/karmaReducer.ns',
@@ -25,7 +25,7 @@ const files = [
     'reference/spider.ns',
     'reference/stockMarketer.ns',
     'reference/stockMarketer4S.ns',
-    'reference/weaken.ns',
+    'weaken.ns',
 ];
 /*
  * This will import all files listed in importFiles.
