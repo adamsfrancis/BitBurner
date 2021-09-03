@@ -100,7 +100,3 @@ export async function main(ns) {
   ns.tprint(serverMap);
   ns.tprint("Spider crawled successfully");
 }
-
-export function getServerMap(ns){
-    return serverMap;
-}

@@ -1,8 +1,8 @@
-import { settings, setItem } from '/utils/commonArgs.ns'
+import { settings, getItem } from '/utils/commonArgs.ns'
 import {localeHHMMSS} from '/utils/utilFunctions.ns'
-import {serverMap} from '/utils/getServers.ns'
 
 export async function main(ns) {
+    getItem(settings().keys.serverMap, serverMap)
     for(let i = 0;i<serverMap.length;i++){
         ns.tprint(serverMap.host);
     }
