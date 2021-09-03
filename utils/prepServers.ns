@@ -1,0 +1,10 @@
+import { settings, setItem } from '/utils/commonArgs.ns'
+import {localeHHMMSS} from '/utils/utilFunctions.ns'
+import {serverMap} from '/utils/getServers.ns'
+
+export async function main(ns) {
+    for(let i = 0;i<serverMap.length;i++){
+        ns.tprint(serverMap.host);
+    }
+
+}
