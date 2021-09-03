@@ -1,102 +1,68 @@
-import { settings, writeServerMap } from '/utils/commonArgs.ns'
+import { writeServerMap } from '/utils/commonArgs.ns'
 import {localeHHMMSS} from '/utils/utilFunctions.ns'
+import {Server} from '/classes/classServer.ns'
+import { settings } from '/utils/commonArgs.ns';
 
-
-
-export async function main(ns) {
-  let hostname = ns.getHostname()
-
-  if (hostname !== 'home') {
-    throw new Exception('Run the script from home')
-  }
-
-  var serverMap = { servers: {}, lastUpdate: new Date().getTime() }
-  const scanArray = ['home']
-
-  while (scanArray.length) {
-    const host = scanArray.shift()
-
-    serverMap.servers[host] = {
-      hostName: host,
-      ports: ns.getServerNumPortsRequired(host),
-      hackingLevel: ns.getServerRequiredHackingLevel(host),
-      moneyMax: ns.getServerMaxMoney(host),
-      moneyAvailable: ns.getServerMoneyAvailable(host),
-      growth: ns.getServerGrowth(host),
-      minSecurityLevel: ns.getServerMinSecurityLevel(host),
-      baseSecurityLevel: ns.getServerBaseSecurityLevel(host),
-      ramMax: ns.getServerMaxRam(host),
-      ramUsed: ns.getServerUsedRam(host),
-      files: ns.ls(host),
-      rootAccess: ns.hasRootAccess(host),
+class ServerMapRunner {
+    async run(ns) {
+        const servers = this.createServerList(ns);
+        writeServerMap(ns, servers);
     }
-
-    const connections = ns.scan(host) || ['home']
-    serverMap.servers[host].connections = connections
-
-    connections.filter((hostname) => !serverMap.servers[hostname]).forEach((hostname) => scanArray.push(hostname))
-  }
-
-  let hasAllParents = false
-
-  while (!hasAllParents) {
-    hasAllParents = true
-
-    Object.keys(serverMap.servers).forEach((hostname) => {
-      const server = serverMap.servers[hostname]
-
-      if (!server.parent) hasAllParents = false
-
-      if (hostname === 'home') {
-        server.parent = 'home'
-        server.children = server.children ? server.children : []
-      }
-
-      if (hostname.includes('myServ-')) {
-        server.parent = 'home'
-        server.children = []
-
-        if (serverMap.servers[server.parent].children) {
-          serverMap.servers[server.parent].children.push(hostname)
-        } else {
-          serverMap.servers[server.parent].children = [hostname]
+    createServerList(ns) {
+        const serverMap = this.spider(ns, settings.homeServerID, settings.homeServerHost);
+        return serverMap;
+    }
+    spider(ns, id, nodeName, parent) {
+        const tempServerMap = [];
+        const queue = ns.scan(nodeName);
+        if (parent) {
+            const parentIndex = queue.indexOf(parent.characteristics.host);
+            queue.splice(parentIndex, 1);
+            if (queue.length === 0)
+                return this.createLeafNode(ns, nodeName, id, parent);
         }
-      }
-
-      if (!server.parent) {
-        if (server.connections.length === 1) {
-          server.parent = server.connections[0]
-          server.children = []
-
-          if (serverMap.servers[server.parent].children) {
-            serverMap.servers[server.parent].children.push(hostname)
-          } else {
-            serverMap.servers[server.parent].children = [hostname]
-          }
-        } else {
-          if (!server.children) {
-            server.children = []
-          }
-
-          if (server.children.length) {
-            const parent = server.connections.filter((hostname) => !server.children.includes(hostname))
-
-            if (parent.length === 1) {
-              server.parent = parent.shift()
-
-              if (serverMap.servers[server.parent].children) {
-                serverMap.servers[server.parent].children.push(hostname)
-              } else {
-                serverMap.servers[server.parent].children = [hostname]
-              }
-            }
-          }
+        const subtreeNode = this.createSubtreeNode(ns, queue, nodeName, id, parent);
+        tempServerMap.push(subtreeNode);
+        // Loop through the current level
+        queue.forEach((childNodeName, index) => {
+            const childId = subtreeNode.characteristics.treeStructure.children[index];
+            const children = this.spider(ns, childId, childNodeName, subtreeNode);
+            tempServerMap.push(...children);
+        });
+        return tempServerMap;
+    }
+    createLeafNode(ns, nodeName, id, parent) {
+        const characteristics = {
+            host: nodeName,
+            id,
+            treeStructure: {
+                connections: [parent.characteristics.id],
+                parent: parent.characteristics.id,
+                children: [],
+            },
+        };
+        return [new Server(ns,{characteristics})]
         }
-      }
-    })
-  }
+    createSubtreeNode(ns, queue, nodeName, id, parent) {
+        const children = Array.from({ length: queue.length }, () => generateHash());
+        const parentId = (parent) ? parent.characteristics.id : '';
+        const characteristics = {
+            id,
+            type: (parent) ? ServerType.HackableServer : ServerType.HomeServer,
+            host: nodeName,
+            treeStructure: {
+                connections: [...children, parentId],
+                children,
+                parent: parentId,
+            },
+        };
+        return new Server(ns,{characteristics});
+    }
+}
+export async function main(ns) {
+    await (new ServerMapRunner()).run(ns);
+}
 
-  writeServerMap(ns,serverMap);
-  ns.tprint(serverMap);
-  ns.tprint("Spider crawled successfully");
+export function generateHash() {
+    return [...Array(32)].map(() => Math.random().toString(36)[2]).join('');
 }

@@ -2,7 +2,7 @@ import { getServerMap } from '/utils/commonArgs.ns'
 import {localeHHMMSS} from '/utils/utilFunctions.ns'
 
 export async function main(ns) {
-    const serverMap = readServerMap(ns);
+    const serverMap = getServerMap(ns);
     for(let i = 0;i<serverMap.length;i++){
         ns.tprint(serverMap.host);
     }

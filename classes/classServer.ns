@@ -1,0 +1,16 @@
+export class Server{
+    constructor(ns,characteristics){
+        this.serverName = characteristics.host;
+        this.ports = ns.getServerNumPortsRequired(this.serverName),
+        this.hackingLevelhackingLevel = ns.getServerRequiredHackingLevel(this.serverName),
+        this.moneyMax = ns.getServerMaxMoney(this.serverName),
+        this.moneyAvailable = ns.getServerMoneyAvailable(this.serverName),
+        this.growth = ns.getServerGrowth(this.serverName),
+        this.minSecurityLevel = ns.getServerMinSecurityLevel(this.serverName),
+        this.baseSecurityLevel = ns.getServerBaseSecurityLevel(this.serverName),
+        this.ramMax = ns.getServerMaxRam(this.serverName),
+        this.ramUsed = ns.getServerUsedRam(this.serverName),
+        this.files = ns.ls(this.serverName),
+        this.rootAccess = ns.hasRootAccess(this.serverName)
+    }
+}

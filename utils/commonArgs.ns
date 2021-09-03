@@ -3,12 +3,9 @@ export const settings = {
   maxMoneyMultiplayer: 0.9,
   minSecurityWeight: 100,
   mapRefreshInterval: 24 * 60 * 60 * 1000,
-  keys: {
-    serverMap: '/temp/servermap.txt',
-    hackTarget: 'BB_HACK_TARGET',
-    action: 'BB_ACTION',
-  },
   serverMapLocation:'/temp/servermap.txt',
+  homeServerHost:'home',
+  homeServerID:'00000000000000000000000000000000',
 }
 
 export function writeServerMap(ns,serverMap){
