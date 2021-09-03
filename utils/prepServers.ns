@@ -1,4 +1,4 @@
-import { readServerMap } from '/utils/commonArgs.ns'
+import { getServerMap } from '/utils/commonArgs.ns'
 import {localeHHMMSS} from '/utils/utilFunctions.ns'
 
 export async function main(ns) {

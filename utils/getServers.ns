@@ -1,5 +1,4 @@
-import { writeServerMap } from './commonArgs.ns'
-import { settings, setItem } from '/utils/commonArgs.ns'
+import { settings, writeServerMap } from '/utils/commonArgs.ns'
 import {localeHHMMSS} from '/utils/utilFunctions.ns'
 
 
@@ -11,7 +10,7 @@ export async function main(ns) {
     throw new Exception('Run the script from home')
   }
 
-  const serverMap = { servers: {}, lastUpdate: new Date().getTime() }
+  var serverMap = { servers: {}, lastUpdate: new Date().getTime() }
   const scanArray = ['home']
 
   while (scanArray.length) {
