@@ -26,6 +26,9 @@ export async function main(ns) {
   if (hostname !== 'home') {
     throw new Exception('Run the script from home')
   }
+  for(let i = 0; i < filesToDownload.length;i++){
+      await ns.rm(filesToDownload[i]);
+  }
 
   for (let i = 0; i < filesToDownload.length; i++) {
     const filename = filesToDownload[i]
@@ -38,7 +41,4 @@ export async function main(ns) {
   }
 
   valuesToRemove.map((value) => localStorage.removeItem(value))
-
-  ns.tprint(`[${localeHHMMSS()}] Spawning killAll.ns`)
-  ns.spawn('killAll.ns', 1, 'runHacking.ns')
 }
