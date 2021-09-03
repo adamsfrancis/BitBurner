@@ -1,12 +1,12 @@
-const baseUrl = 'https://raw.githubusercontent.com/adamsfrancis/BitBurner/master/'
+const baseUrl = 'https://raw.githubusercontent.com/adamsfrancis/BitBurner/master'
 const filesToDownload = [
-  'notTheHacksYoureLookingFor/grow.ns',
-  'notTheHacksYoureLookingFor/hack.ns',
-  'notTheHacksYoureLookingFor/weaken.ns',
-  'utils/commonArgs.ns',
-  'utils/getServers.ns',
-  'utils/prepServers.ns',
-  'utils/utilFunctions.ns',
+  '/notTheHacksYoureLookingFor/grow.ns',
+  '/notTheHacksYoureLookingFor/hack.ns',
+  '/notTheHacksYoureLookingFor/weaken.ns',
+  '/utils/commonArgs.ns',
+  '/utils/getServers.ns',
+  '/utils/prepServers.ns',
+  '/utils/utilFunctions.ns',
 ]
 const valuesToRemove = ['BB_SERVER_MAP']
 
