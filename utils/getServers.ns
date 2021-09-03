@@ -1,3 +1,4 @@
+import { writeServerMap } from './commonArgs.ns'
 import { settings, setItem } from '/utils/commonArgs.ns'
 import {localeHHMMSS} from '/utils/utilFunctions.ns'
 
@@ -17,7 +18,7 @@ export async function main(ns) {
     const host = scanArray.shift()
 
     serverMap.servers[host] = {
-      host,
+      hostName: host,
       ports: ns.getServerNumPortsRequired(host),
       hackingLevel: ns.getServerRequiredHackingLevel(host),
       moneyMax: ns.getServerMaxMoney(host),
@@ -96,7 +97,7 @@ export async function main(ns) {
     })
   }
 
-  setItem(settings().keys.serverMap, serverMap)
+  writeServerMap(ns,serverMap);
   ns.tprint(serverMap);
   ns.tprint("Spider crawled successfully");
 }

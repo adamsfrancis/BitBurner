@@ -4,26 +4,29 @@ export const settings = {
   minSecurityWeight: 100,
   mapRefreshInterval: 24 * 60 * 60 * 1000,
   keys: {
-    serverMap: 'BB_SERVER_MAP',
+    serverMap: '/temp/servermap.txt',
     hackTarget: 'BB_HACK_TARGET',
     action: 'BB_ACTION',
   },
+  serverMapLocation:'/temp/servermap.txt',
 }
 
-export function getItem(key) {
-  let item = localStorage.getItem(key)
-
-  return item ? JSON.parse(item) : undefined
+export function writeServerMap(ns,serverMap){
+  ns.write(settings.serverMapLocation,JSON.stringify(serverMap),'w')
 }
-
-export function setItem(key, value) {
-  localStorage.setItem(key, JSON.stringify(value))
+export function clearServerMap(ns){
+  ns.clear(settings.serverMapLocation);
 }
-
-export async function main(ns) {
-  return {
-    settings,
-    getItem,
-    setItem,
-  }
+export function getServerMap(ns){
+  return readServerMap(ns);
+}
+function readServerMap(ns){
+	const serverMapString = ns.read(settings.serverMapLocation).toString()
+	const serverMap = JSON.parse(serverMapString)
+	const serverObjects = Array.from(serverMap.servers)
+	serverMap.servers = []
+	for (const server of serverObjects) {
+		serverMap.servers.push(SerializationUtils.serverFromJSON(ns, server))
+	}
+	return serverMap
 }
