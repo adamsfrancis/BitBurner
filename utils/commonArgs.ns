@@ -1,29 +1,10 @@
 export const settings = {
-  minSecurityLevelOffset: 2,
-  maxMoneyMultiplayer: 0.9,
-  minSecurityWeight: 100,
-  mapRefreshInterval: 24 * 60 * 60 * 1000,
-  serverMapLocation:'/temp/servermap.txt',
-  homeServerHost:'home',
-  homeServerID:'00000000000000000000000000000000',
-}
-
-export function writeServerMap(ns,serverMap){
-  ns.write(settings.serverMapLocation,JSON.stringify(serverMap),'w')
-}
-export function clearServerMap(ns){
-  ns.clear(settings.serverMapLocation);
-}
-export function getServerMap(ns){
-  return readServerMap(ns);
-}
-function readServerMap(ns){
-	const serverMapString = ns.read(settings.serverMapLocation).toString()
-	const serverMap = JSON.parse(serverMapString)
-	const serverObjects = Array.from(serverMap.servers)
-	serverMap.servers = []
-	for (const server of serverObjects) {
-		serverMap.servers.push(SerializationUtils.serverFromJSON(ns, server))
-	}
-	return serverMap
+  filesToTransfer:['/notTheHacksYoureLookingFor/weaken.ns','/notTheHacksYoureLookingFor/grow.ns','/notTheHacksYoureLookingFor/hack.ns'],
+  weaken:'/notTheHacksYoureLookingFor/weaken.ns',
+  grow:'/notTheHacksYoureLookingFor/grow.ns',
+  hack:'/notTheHacksYoureLookingFor/hack.ns',
+  hackPrograms:['BruteSSH.exe','FTPCrack.exe','relaySMTP.exe','HTTPWorm.exe','SQLInject.exe'],
+  weakenChange: 0.05,
+  growChange: 0.004,
+  hackChange: 0.002
 }

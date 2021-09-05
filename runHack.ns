@@ -1,0 +1,156 @@
+import { getHacked } from '/utils/serverUtils.ns'
+import { settings } from '/utils/commonArgs.ns'
+
+export async function main(ns) {
+	let targetServer = await getTarget(ns);
+	//is the server prepped
+	if (!isPrepped(ns, targetServer)) {
+		ns.tprint("Server needs prepped")
+		prepServer(ns, targetServer)
+	} else {
+		ns.tprint("Server can be attacked")
+		attackServer(ns, targetServer);
+	}
+}
+
+export async function getTarget(ns) {
+	let hackedList = await getHacked(ns);
+	//sort by max money
+	hackedList = await hackedList.sort((a, b) => b.moneyMax - a.moneyMax);
+	//remove targets that aren't in the same order of magnitude
+	hackedList = orderOfMag(hackedList, hackedList[0].moneyMax);
+	hackedList = hackedList.sort((a, b) => a.minSecurityLevel - b.minSecurityLevel);
+	hackedList = tooMuchSecurity(hackedList, hackedList[0].minSecurityLevel);
+
+	let targetServer = hackedList[0];
+	return targetServer;
+}
+
+function orderOfMag(list, curMax) {
+	return list.filter(server => server.moneyMax >= (curMax / 10));
+}
+
+function isPrepped(ns, server) {
+	ns.tprint(server)
+	let curSecLevel = ns.getServerSecurityLevel(server.serverName)
+	let minSecLevel = server.minSecurityLevel;
+	let secPrepped = false;
+	let maxCash = server.moneyMax;
+	let curCash = ns.getServerMoneyAvailable(server.serverName)
+	let cashPrepped = false;
+	if (curSecLevel == minSecLevel) { secPrepped = true; }
+	if (maxCash == curCash) { cashPrepped = true; }
+	if (secPrepped && cashPrepped) { return true; } else { return false; }
+}
+
+async function prepServer(ns, server) {
+	let usableServers = ns.getHacked(ns);
+	let curSecLevel = ns.getServerSecurityLevel(server.serverName)
+	let minSecLevel = server.minSecurityLevel;
+	let neededWeakenCycles = await Math.ceil(curSecLevel - minSecLevel) / settings.weakenChange;
+	let neededGrowCycles = await Math.ceil(ns.growthAnalyze(server.serverName, server.moneyMax / server.moneyAvailable))
+	let cyclesAvail = await getMaxCycles(ns);
+	if (neededWeakenCycles > 0) {
+		if (neededWeakenCycles > cyclesAvail) {
+			neededWeakenCycles = cyclesAvail;
+		} else {
+			for (let i = 0; i < usableServers.length; i++) {
+				if (usableServers[i].canFitWeaken > 0) {
+					let thisJobServer = usableServers[i];
+					ns.exec(settings.weaken, thisJobServer.serverName, thisJobServer.canFitWeaken, targetServer.serverName, thisJobServer.canFitWeaken);
+					neededWeakenCycles -= thisJobServer.canFitWeaken;
+				}
+			}
+			ns.sleep(ns.getWeakenTime(server.serverName) * 1000);
+		}
+	} else if (neededGrowCycles > 0) {
+		if (neededGrowCycles > cyclesAvail) {
+			neededGrowCycles = cyclesAvail;
+		} else {
+			for (let i = 0; i < usableServers.length; i++) {
+				if (usableServers[i].canFitWeaken > 0) {
+					let thisJobServer = usableServers[i];
+					ns.exec(settings.grow, thisJobServer.serverName, thisJobServer.canFitGrow, targetServer.serverName, thisJobServer.canFitGrow);
+					neededGrowCycles -= thisJobServer.canFitGrow;
+
+				}
+			}
+			ns.sleep(ns.getGrowTime(server.serverName) * 1000);
+		}
+	}
+}
+
+function tooMuchSecurity(list, curSec) {
+	return list.filter(server => server.minSecurityLevel <= (curSec * 1.5));
+}
+
+async function getMaxCycles(usableServers) {
+	let usableCycles = 0;
+	for (let i = 0; i < usableServers.length; i++) {
+		usableCycles += usableServers[i].canFitGrow;
+	}
+	return usableCycles;
+}
+
+async function attackServer(ns, targetServer) {
+	let usableServers = await getHacked(ns);
+	let numHacks = Math.floor(ns.hackAnalyzeThreads(targetServer.serverName, targetServer.moneyMax * .01));
+	let hackPct = ns.hackAnalyzePercent(targetServer.serverName) * numHacks;
+	let growNeeded = Math.ceil(ns.growthAnalyze(targetServer.serverName, 100 / (100 - hackPct)));
+	let weakenNeeded = Math.ceil(((numHacks * settings.hackChange) + (growNeeded * settings.growChange)) / settings.weakenChange);
+	let cyclesAvail = await getMaxCycles(usableServers);
+	if (cyclesAvail >= (numHacks + growNeeded + weakenNeeded)) {
+		runWeaken(ns, targetServer, weakenNeeded,growNeeded,numHacks);
+		
+}}
+
+async function runWeaken(ns, targetserver, weakenNeeded,growNeeded,numHacks) {
+	let usableServers = await getHacked(ns);
+	if (weakenNeeded > 0) {
+		for (let i = 0; i < usableServers.length; i++) {
+			let thisJobServer = usableServers[i];
+			let canFit = await Math.floor((ns.getServerMaxRam(thisJobServer.serverName) - ns.getServerUsedRam(thisJobServer.serverName)) / 1.75);
+			if (canFit > weakenNeeded) { canFit = weakenNeeded; }
+			if (canFit > 0) {
+				ns.exec(settings.weaken, thisJobServer.serverName, canFit, targetserver.serverName, canFit);
+				weakenNeeded -= canFit;
+			} else { continue;}
+			if (weakenNeeded > 0) { continue; } else { break; }
+		}
+	}
+	runGrow(ns, targetServer, growNeeded,numHacks);;
+}
+
+async function runGrow(ns, targetserver, growNeeded) {
+	let usableServers = await getHacked(ns);
+	if (growNeeded > 0) {
+		for (let i = 0; i < usableServers.length; i++) {
+			let thisJobServer = usableServers[i];
+			let canFit = await Math.floor((ns.getServerMaxRam(thisJobServer.serverName) - ns.getServerUsedRam(thisJobServer.serverName)) / 1.75);
+			if (canFit > growNeeded) { canFit = growNeeded; }
+			if (canFit > 0) {
+				ns.exec(settings.grow, thisJobServer.serverName, canFit, targetserver.serverName, canFit);
+				growNeeded -= canFit;
+			}
+			if (growNeeded > 0) { continue; } else { break; }
+		}
+	}
+	runHacks(ns, targetServer, numHacks);;
+}
+
+async function runHacks(ns, targetserver, numHacks) {
+	let usableServers = await getHacked(ns);
+	if (numHacks > 0) {
+		for (let i = 0; i < usableServers.length; i++) {
+			let thisJobServer = usableServers[i];
+			let canFit = await Math.floor((ns.getServerMaxRam(thisJobServer.serverName) - ns.getServerUsedRam(thisJobServer.serverName)) / 1.75);
+			if (canFit > numHacks) { canFit = numHacks; }
+			if (canFit > 0) {
+				ns.exec(settings.hack, thisJobServer.serverName, canFit, targetserver.serverName, canFit);
+				numHacks -= canFit;
+			}
+			if (numHacks > 0) { continue; } else { break; }
+		}
+	}
+	ns.tprint("WE MADE IT!");
+}

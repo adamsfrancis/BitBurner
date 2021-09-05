@@ -1,10 +1,24 @@
-import { getServerMap } from '/utils/commonArgs.ns'
-import {localeHHMMSS} from '/utils/utilFunctions.ns'
+import {list_servers} from 'spider.ns'
+import {settings} from '/utils/commonArgs.ns'
+import {getHackable,getHackProgs} from '/utils/serverUtils.ns'
 
 export async function main(ns) {
-    const serverMap = getServerMap(ns);
-    for(let i = 0;i<serverMap.length;i++){
-        ns.tprint(serverMap.host);
+    const forRAM = [ns.brutessh,ns.ftpcrack,ns.relaysmtp,ns.httpworm,ns.sqlinject]
+    let serverList = list_servers(ns);
+    let hackableList = await getHackable(ns);
+    for(let i = 0;i<serverList.length;i++){
+        if(!serverList[i].files.includes(settings.filesToTransfer)){
+            await ns.scp(settings.filesToTransfer,serverList[i].serverName)
+        }
     }
+    ns.tprint(hackableList)
+    breakItOpen(ns,hackableList);
+}
 
+function breakItOpen(ns,list){
+    for(let i = 0;i<list.length;i++){
+        let hackProgs = getHackProgs(ns);
+        hackProgs.forEach((prog) => ns[prog.split('.').shift().toLocaleLowerCase()](list[i].serverName))
+        ns.nuke(list[i].serverName);
+    }
 }

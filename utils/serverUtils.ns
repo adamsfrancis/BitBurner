@@ -1,0 +1,38 @@
+import {list_servers} from 'spider.ns'
+import {settings} from '/utils/commonArgs.ns'
+export const returnList = [];
+
+export async function getHackable(ns) {
+    let serverList = list_servers(ns);
+    let pHackSkill = ns.getPlayer().hacking_skill;
+    let portHacks = getHackProgs(ns);
+    serverList = canHack(serverList,pHackSkill,portHacks.length);
+    serverList.forEach(thing => returnList.push(thing))
+    ns.tprint(returnList)
+    return returnList;
+}
+
+export async function getHacked(ns) {
+    let serverList = list_servers(ns);
+    serverList = hasRoot(serverList);
+    return serverList;
+}
+
+function hasRoot(list){
+    return list.filter(server => 
+    server.rootAccess == true);
+}
+
+function canHack(list,mySKill,porthacksavail){
+    return list.filter(skill => 
+    mySKill >= skill.hackingLevel &&
+    skill.rootAccess == false &&
+    skill.ports <= porthacksavail);
+}
+
+function getPortHacks(hackPrograms,myPrograms){
+    return myPrograms.filter(prog => hackPrograms.includes(prog));
+}
+export function getHackProgs(ns){
+    return getPortHacks(settings.hackPrograms,ns.ls("home"))
+}

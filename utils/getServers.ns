@@ -1,68 +1,7 @@
-import { writeServerMap } from '/utils/commonArgs.ns'
-import {localeHHMMSS} from '/utils/utilFunctions.ns'
-import {Server} from '/classes/classServer.ns'
 import { settings } from '/utils/commonArgs.ns';
+import {list_servers} from 'spider.ns';
 
-class ServerMapRunner {
-    async run(ns) {
-        const servers = this.createServerList(ns);
-        writeServerMap(ns, servers);
-    }
-    createServerList(ns) {
-        const serverMap = this.spider(ns, settings.homeServerID, settings.homeServerHost);
-        return serverMap;
-    }
-    spider(ns, id, nodeName, parent) {
-        const tempServerMap = [];
-        const queue = ns.scan(nodeName);
-        if (parent) {
-            const parentIndex = queue.indexOf(parent.characteristics.host);
-            queue.splice(parentIndex, 1);
-            if (queue.length === 0)
-                return this.createLeafNode(ns, nodeName, id, parent);
-        }
-        const subtreeNode = this.createSubtreeNode(ns, queue, nodeName, id, parent);
-        tempServerMap.push(subtreeNode);
-        // Loop through the current level
-        queue.forEach((childNodeName, index) => {
-            const childId = subtreeNode.characteristics.treeStructure.children[index];
-            const children = this.spider(ns, childId, childNodeName, subtreeNode);
-            tempServerMap.push(...children);
-        });
-        return tempServerMap;
-    }
-    createLeafNode(ns, nodeName, id, parent) {
-        const characteristics = {
-            host: nodeName,
-            id,
-            treeStructure: {
-                connections: [parent.characteristics.id],
-                parent: parent.characteristics.id,
-                children: [],
-            },
-        };
-        return [new Server(ns,{characteristics})]
-        }
-    createSubtreeNode(ns, queue, nodeName, id, parent) {
-        const children = Array.from({ length: queue.length }, () => generateHash());
-        const parentId = (parent) ? parent.characteristics.id : '';
-        const characteristics = {
-            id,
-            type: (parent) ? ServerType.HackableServer : ServerType.HomeServer,
-            host: nodeName,
-            treeStructure: {
-                connections: [...children, parentId],
-                children,
-                parent: parentId,
-            },
-        };
-        return new Server(ns,{characteristics});
-    }
-}
 export async function main(ns) {
-    await (new ServerMapRunner()).run(ns);
-}
-
-export function generateHash() {
-    return [...Array(32)].map(() => Math.random().toString(36)[2]).join('');
+    let serverList = list_servers(ns);
+    serverList.forEach(server =>  ns.tprint('Name: ' + server.serverName + " // Rooted: " + server.rootAccess + " // Hacking Level: " + server.hackingLevel))
 }

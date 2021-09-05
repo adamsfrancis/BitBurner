@@ -1,16 +1,21 @@
 export class Server{
-    constructor(ns,characteristics){
-        this.serverName = characteristics.host;
-        this.ports = ns.getServerNumPortsRequired(this.serverName),
-        this.hackingLevelhackingLevel = ns.getServerRequiredHackingLevel(this.serverName),
-        this.moneyMax = ns.getServerMaxMoney(this.serverName),
-        this.moneyAvailable = ns.getServerMoneyAvailable(this.serverName),
-        this.growth = ns.getServerGrowth(this.serverName),
-        this.minSecurityLevel = ns.getServerMinSecurityLevel(this.serverName),
-        this.baseSecurityLevel = ns.getServerBaseSecurityLevel(this.serverName),
-        this.ramMax = ns.getServerMaxRam(this.serverName),
-        this.ramUsed = ns.getServerUsedRam(this.serverName),
-        this.files = ns.ls(this.serverName),
-        this.rootAccess = ns.hasRootAccess(this.serverName)
+    constructor(ns,server,parent){
+        this.serverName = server;
+        this.parentServer = parent;
+        this.ports = ns.getServerNumPortsRequired(server),
+        this.hackingLevel = ns.getServerRequiredHackingLevel(server),
+        this.moneyMax = ns.getServerMaxMoney(server),
+        this.moneyAvailable = ns.getServerMoneyAvailable(server),
+        this.growth = ns.getServerGrowth(server),
+        this.minSecurityLevel = ns.getServerMinSecurityLevel(server),
+        this.baseSecurityLevel = ns.getServerBaseSecurityLevel(server),
+        this.ramMax = ns.getServerMaxRam(server),
+        this.ramUsed = ns.getServerUsedRam(server),
+        this.ramAvail = this.ramMax-this.ramUsed,
+        this.canFitHack = Math.floor(this.ramAvail/1.7);
+        this.canFitGrow = Math.floor(this.ramAvail/1.75);
+        this.canFitWeaken = Math.floor(this.ramAvail/1.75);
+        this.files = ns.ls(server),
+        this.rootAccess = ns.hasRootAccess(server)
     }
 }
