@@ -1,13 +1,15 @@
 const baseUrl = 'https://raw.githubusercontent.com/adamsfrancis/BitBurner/master'
 const filesToDownload = [
-  '/Classes/Server.ns',
-  '/Managers/managerServer.ns',
-  '/tools/grow.ns',
-  '/tools/weaken.ns',
-  '/tools/hack.ns',
-  '/tools/tools.ns',
-  'startPoint.ns'
+  '/notTheHacksYoureLookingFor/grow.ns',
+  '/notTheHacksYoureLookingFor/hack.ns',
+  '/notTheHacksYoureLookingFor/weaken.ns',
+  '/utils/commonArgs.ns',
+  '/utils/getServers.ns',
+  '/utils/prepServers.ns',
+  '/utils/utilFunctions.ns',
+  '/classes/classServer.ns',
 ]
+const valuesToRemove = ['BB_SERVER_MAP']
 
 function localeHHMMSS(ms = 0) {
   if (!ms) {
@@ -38,4 +40,6 @@ export async function main(ns) {
     ns.tprint(`[${localeHHMMSS()}] Trying to download ${path}`)
     await ns.wget(path + '?ts=' + new Date().getTime(), filename)
   }
+
+  valuesToRemove.map((value) => localStorage.removeItem(value))
 }

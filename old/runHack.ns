@@ -1,17 +1,40 @@
-import { getHacked } from '/utils/serverUtils.ns'
 import { settings } from '/utils/commonArgs.ns'
 
-export async function main(ns) {
-	let targetServer = await getTarget(ns);
-	//is the server prepped
-	if (!isPrepped(ns, targetServer)) {
-		ns.tprint("Server needs prepped")
-		prepServer(ns, targetServer)
-	} else {
-		ns.tprint("Server can be attacked")
-		attackServer(ns, targetServer);
-	}
+export async function main(ns){
+	//reset all the things
+	asyncHelpers = [];
+	serverListRAM = [];
+	serverListMoney =  [];
+	addedServers = [];
+	toolKit = [];
+
+	//example for later
+	// asyncHelpers = [
+    //     {name: "host-manager.ns", shortName: "host", isLaunched: false}
+    // ];
+
+	//get our host name
+	homeHost = ns.getHostname();
+
+	//build server lists
+	await buildServerList(ns);
 }
+
+async function buildServerList(ns) {
+	let startingNode
+}
+
+// export async function main(ns) {
+// 	let targetServer = await getTarget(ns);
+// 	//is the server prepped
+// 	if (!isPrepped(ns, targetServer)) {
+// 		ns.tprint("Server needs prepped")
+// 		prepServer(ns, targetServer)
+// 	} else {
+// 		ns.tprint("Server can be attacked")
+// 		attackServer(ns, targetServer);
+// 	}
+// }
 
 export async function getTarget(ns) {
 	let hackedList = await getHacked(ns);

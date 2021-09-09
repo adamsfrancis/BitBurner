@@ -1,0 +1,14 @@
+export const hackTools = [
+	'/tools/grow.ns',
+	'/tools/weaken.ns',
+	'/tools/hack.ns'
+]
+
+export const crackTools = [
+	'BruteSSH.exe',
+	'FTPCrack.exe',
+	'relaySMTP.exe',
+	'HTTPWorm.exe',
+	'SQLInject.exe',
+	'Autolink.exe'
+]

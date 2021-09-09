@@ -1,0 +1,86 @@
+import { Server } from '/Classes/Server.ns';
+import * as hackTools from '/tools/tools.ns';
+
+export const serverMap = [];
+export const needsPrep = [];
+export const usableMap = [];
+export const targetMap = [];
+
+export async function main(ns) {
+	while (true) {
+		await clearArray(serverMap);
+		var sortableList = await runServers(ns);
+		sortableList = trimDuplicates(sortableList)
+		await buildServerMap(ns,sortableList)
+		await buildHackableUsable();
+		await buildTargetMap(ns);
+		await ns.sleep(10000)
+	}
+
+}
+
+async function scanServers(ns, parent, server,sortableList) {
+	const children = ns.scan(server);
+	for (let child of children) {
+		if (parent == child) {
+			continue;
+		}
+		let newServer = new Server(ns, server, parent);
+		sortableList.push(newServer);
+		scanServers(ns, server, child,sortableList);
+	}
+}
+
+async function runServers(ns) {
+	var sortableList = [];
+	await scanServers(ns, '', 'home',sortableList);
+	return sortableList;
+}
+
+async function buildHackableUsable() {
+	for (let i = 0; i < serverMap.length; i++) {
+		if (serverMap[i].rootAccess == true) {
+			usableMap.push(serverMap[i])
+		} else {
+			needsPrep.push(serverMap[i])
+		}
+	}
+}
+async function clearArray(server) {
+	while (server.length > 0) {
+		server.pop();
+	}
+}
+
+export function trimDuplicates(items){
+    const ids = [];
+    return items.filter(item => ids.includes(item.serverName) ? false : ids.push(item.serverName));
+}
+
+function printNames(ns,list){
+	for(let i = 0;i<list.length;i++){
+		ns.tprint(list[i].serverName)
+	}
+}
+
+async function buildServerMap(ns,list){
+	for(let i = 0;i<list.length;i++){
+		serverMap.push(list[i])
+	}
+}
+
+export async function distributeProgs(ns){
+	for(let i = 0;i<serverMap.length;i++){
+		ns.scp(hackTools.hackTools,serverMap[i].serverName)
+	}
+}
+
+async function buildTargetMap(ns){
+	let targets = serverMap.filter(hackLevel => hackLevel.hackingLevel <= ns.getPlayer().hacking_skill).sort((a,b) => b.moneyMax - a.moneyMax).filter(money => money.moneyMax < money[0].moneyMax/10);
+	ns.tprint(targets)
+	if(targetMap.length>0){
+		while(targetMap.length>0){
+			targetMap.pop();
+		}
+	}
+}

@@ -1,0 +1,15 @@
+export async function main(ns){
+    //figure out which server we're on
+    const hostName = ns.getHostname();
+    //if it's not home, throw an error
+    if(hostName !== 'home'){
+        throw new Error('Must be run from home.')
+    }
+    //run the initialization
+    await initializeServices(ns);
+}
+
+async function initializeServices(ns){
+    //function to start all services
+    ns.run('/Managers/managerServer.ns',1)
+}
