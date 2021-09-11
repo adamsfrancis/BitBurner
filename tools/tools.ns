@@ -1,8 +1,8 @@
-export const hackTools = [
-	this.grow = '/tools/grow.ns',
-	this.weaken = '/tools/weaken.ns',
-	this.hack = '/tools/hack.ns'
-]
+export const hackTools = {
+	grow : '/tools/grow.ns',
+	weaken : '/tools/weaken.ns',
+	hack : '/tools/hack.ns'
+}
 
 export const crackTools = [
 	'BruteSSH.exe',
