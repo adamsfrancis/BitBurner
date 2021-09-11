@@ -11,11 +11,14 @@ export class Server{
         this.baseSecurityLevel = ns.getServerBaseSecurityLevel(server),
         this.ramMax = ns.getServerMaxRam(server),
         this.ramUsed = ns.getServerUsedRam(server),
-        this.ramAvail = this.ramMax-this.ramUsed,
+        this.ramAvail = getRam(server)
         this.files = ns.ls(server),
         this.rootAccess = ns.hasRootAccess(server)
     }
     isOptimal(ns){
         return ns.getSecurityLevel(server) === this.minSecurityLevel && ns.getServerMoneyAvailable(server) === this.moneyMax;
+    }
+    getRam(server){
+        return ns.getServerMaxRam(server) - ns.getServerUsedRam(server);
     }
 }

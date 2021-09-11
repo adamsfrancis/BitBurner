@@ -76,7 +76,10 @@ export async function distributeProgs(ns){
 }
 
 async function buildTargetMap(ns){
-	let targets = serverMap.filter(hackLevel => hackLevel.hackingLevel <= ns.getPlayer().hacking_skill).sort((a,b) => b.moneyMax - a.moneyMax).filter(money => money.moneyMax < money[0].moneyMax/10);
+	let targets = serverMap.filter(hackLevel => hackLevel.hackingLevel <= ns.getPlayer().hacking_skill);
+	targets = targets.sort((a,b) => b.moneyMax - a.moneyMax);
+	let targetCash = targets[0].moneyMax;
+	targets = targets.filter(money => money.moneyMax > targetCash/10);
 	ns.tprint(targets)
 	if(targetMap.length>0){
 		while(targetMap.length>0){

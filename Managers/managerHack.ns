@@ -1,0 +1,47 @@
+import { Server } from '/Classes/Server.ns';
+import * as hackTools from '/tools/tools.ns';
+import { targetMap,usableMap } from '/Managers/managerServer.ns';
+
+const weakenChange = 0.05
+const hackChange = 0.002
+const growChange = 0.004
+
+export async function main(ns){
+    while(true){
+        for(let i = 0;i<targetMap.length;i++){
+            if(!targetMap[i].isOptimal(ns)){
+                prepServer(ns,targetMap[i])
+            }
+        }
+    }
+}
+
+async function prepServer(ns,target){
+    while(!target.isOptimal(ns)){
+        if(ns.getServerSecurityLevel(target.serverName) > target.minSecurityLevel){
+            let maxThreads = getMaxThreads(ns,hackTools.weaken);
+            let neededThreads = (ns.getServerSecurityLevel(target.serverName)-target.minSecurityLevel)/weakenChange
+            if(neededThreads > maxThreads){neededThreads = maxThreads;}
+            for(let i = 0;i<usableMap.length;i++){
+                let servThreads = Math.floor(usableMap[i].getRam/weakenChange)
+                if(neededThreads > servThreads){
+                    ns.exec(hackTools.weaken,target.serverName,servThreads);
+                    neededThreads -= servThreads;
+                } else if(neededThreads <= servThreads){
+                    ns.exec(hackTools.weaken,target.serverName,neededThreads);
+                    neededThreads -= neededThreads;
+                }
+                ns.sleep(ns.getWeakenTime(target.serverName))
+            }
+        }
+    }
+
+}
+
+async function getMaxThreads(ns,tool){
+    let availThreads = 0;
+    for(let i = 0;i<usableMap.length;i++){
+        availThreads += Math.floor((usableMap[i].ramMax-usableMap[i].ramUsed)/ns.getScriptRam(tool));
+    }
+    return availThreads;
+}

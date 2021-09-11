@@ -1,7 +1,7 @@
 export const hackTools = [
-	'/tools/grow.ns',
-	'/tools/weaken.ns',
-	'/tools/hack.ns'
+	this.grow = '/tools/grow.ns',
+	this.weaken = '/tools/weaken.ns',
+	this.hack = '/tools/hack.ns'
 ]
 
 export const crackTools = [

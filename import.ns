@@ -2,6 +2,7 @@ const baseUrl = 'https://raw.githubusercontent.com/adamsfrancis/BitBurner/master
 const filesToDownload = [
   '/Classes/Server.ns',
   '/Managers/managerServer.ns',
+  '/Managers/managerHack.ns',
   '/tools/grow.ns',
   '/tools/weaken.ns',
   '/tools/hack.ns',
