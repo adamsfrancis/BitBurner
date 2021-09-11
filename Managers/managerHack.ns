@@ -31,7 +31,7 @@ async function prepServer(ns,target){
                     ns.exec(hackTools.weaken,target.serverName,neededThreads);
                     neededThreads -= neededThreads;
                 }
-                ns.sleep(ns.getWeakenTime(target.serverName))
+                ns.sleep(ns.getWeakenTime(10000))
             }
         }
     }
