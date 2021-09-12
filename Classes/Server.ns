@@ -5,18 +5,10 @@ export class Server{
         this.portsRequired = ns.getServerNumPortsRequired(server),
         this.hackingLevel = ns.getServerRequiredHackingLevel(server),
         this.moneyMax = ns.getServerMaxMoney(server),
-        this.moneyAvailable = ns.getServerMoneyAvailable(server),
         this.growthRate = ns.getServerGrowth(server),
         this.minSecurityLevel = ns.getServerMinSecurityLevel(server),
-        this.baseSecurityLevel = ns.getServerBaseSecurityLevel(server),
         this.ramMax = ns.getServerMaxRam(server),
         this.files = ns.ls(server),
         this.rootAccess = ns.hasRootAccess(server)
-    }
-    isOptimal(ns){
-        return ns.getSecurityLevel(server) === this.minSecurityLevel && ns.getServerMoneyAvailable(server) === this.moneyMax;
-    }
-    getRam(ns,server){
-        return ns.getServerMaxRam(server) - ns.getServerUsedRam(server);
     }
 }

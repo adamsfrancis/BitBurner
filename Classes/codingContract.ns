@@ -1,0 +1,12 @@
+export class CodingContract{
+	constructor(ns,fileName,serverName){
+		this.fileName = fileName;
+		this.serverName = serverName;
+		this.type = ns.codingcontract.getContractType(fileName,serverName);
+		this.description = ns.codingcontract.getDescription(fileName,serverName);
+		this.data = ns.codingcontract.getData(fileName,serverName)
+	}
+	attempt(ns,answer){
+		return ns.codingcontract.attempt(answer,this.fileName,this.serverName);
+	}
+}

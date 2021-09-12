@@ -1,0 +1,5 @@
+export const portHandles = {
+	usableMap:1,
+	targetMap:2,
+	serverMap:3
+}

@@ -1,0 +1,7 @@
+export function isOptimal(ns, server) {
+	let result = ns.getServerSecurityLevel(server.serverName) === server.minSecurityLevel && ns.getServerMoneyAvailable(server.serverName) === server.moneyMax;
+	return result
+}
+export function getRam(ns, server) {
+	return ns.getServerMaxRam(server.serverName) - ns.getServerUsedRam(server.serverName);
+}

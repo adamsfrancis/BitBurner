@@ -1,25 +1,55 @@
 import { Server } from '/Classes/Server.ns';
 import * as hackTools from '/tools/tools.ns';
+import {portHandles} from '/tools/constants.ns';
 
 export const serverMap = [];
 export const needsPrep = [];
 export const usableMap = [];
 export const targetMap = [];
+export const hackableMap = [];
+let portCrackers = 0;
+let allCopied = false;
 
 export async function main(ns) {
 	while (true) {
 		await clearArray(serverMap);
+		await getPortCrackers(ns);
 		var sortableList = await runServers(ns);
 		sortableList = trimDuplicates(sortableList)
-		await buildServerMap(ns,sortableList)
-		await buildHackableUsable();
+		await buildServerMap(ns, sortableList)
+		await crackServers(ns);
+		await buildHackableUsable(ns);
 		await buildTargetMap(ns);
+		if(!allCopied){await copyScripts(ns);}
+		ns.clear(portHandles.usableMap);
+		ns.clear(portHandles.targetMap);
+		ns.clear(portHandles.serverMap)
+		ns.write(portHandles.usableMap,usableMap);
+		ns.write(portHandles.targetMap,targetMap);
+		ns.write(portHandles.serverMap,serverMap);
 		await ns.sleep(10000)
 	}
-
 }
 
-async function scanServers(ns, parent, server,sortableList) {
+function crackServers(ns){
+	let canCrack = needsPrep.filter(cracks => cracks.portsRequired <= portCrackers);
+	for(let i = 0;i<canCrack.length;i++){
+		for(let j = 0;j<portCrackers;j++){
+			runProgram(ns,hackTools.crackTools[j],canCrack[i]);
+		}
+		ns.nuke(canCrack[i].serverName);
+	}
+}
+function getPortCrackers(ns){
+	portCrackers = 0;
+	for(let i = 0;i<hackTools.crackTools.length;i++){
+		let thisTool = hackTools.crackTools[i];
+		if(ns.fileExists(thisTool,"home")){
+			portCrackers += 1;
+		}
+	}
+}
+async function scanServers(ns, parent, server, sortableList) {
 	const children = ns.scan(server);
 	for (let child of children) {
 		if (parent == child) {
@@ -27,24 +57,38 @@ async function scanServers(ns, parent, server,sortableList) {
 		}
 		let newServer = new Server(ns, server, parent);
 		sortableList.push(newServer);
-		scanServers(ns, server, child,sortableList);
+		scanServers(ns, server, child, sortableList);
 	}
 }
 
 async function runServers(ns) {
 	var sortableList = [];
-	await scanServers(ns, '', 'home',sortableList);
+	await scanServers(ns, '', 'home', sortableList);
 	return sortableList;
 }
 
-async function buildHackableUsable() {
-	for (let i = 0; i < serverMap.length; i++) {
-		if (serverMap[i].rootAccess == true) {
-			usableMap.push(serverMap[i])
-		} else {
-			needsPrep.push(serverMap[i])
-		}
+async function buildHackableUsable(ns) {
+	let usableTemp = await serverMap.filter(rooted => rooted.rootAccess === true);
+	let needsPrepTemp = await serverMap.filter(rooted => rooted.rootAccess === false);
+	let hackableTemp = await usableTemp.filter(hack => hack.hackLevel <= ns.getPlayer().hacking_skill);
+	let purchasedServers = await ns.getPurchasedServers();
+	await clearArray(usableMap)
+	for(let i = 0;i<usableTemp.length;i++){
+		usableMap.push(usableTemp[i]);
 	}
+	for(let i = 0;i<purchasedServers.length;i++){
+		let newServer = new Server(ns, purchasedServers[i], "home");
+		usableMap.push(newServer);
+	}
+	await clearArray(hackableMap)
+	for(let i = 0;i<hackableTemp.length;i++){
+		hackableMap.push(hackableTemp[i]);
+	}
+	await clearArray(needsPrep)
+	for(let i = 0;i<needsPrepTemp.length;i++){
+		needsPrep.push(needsPrepTemp[i]);
+	}
+
 }
 async function clearArray(server) {
 	while (server.length > 0) {
@@ -52,38 +96,64 @@ async function clearArray(server) {
 	}
 }
 
-export function trimDuplicates(items){
-    const ids = [];
-    return items.filter(item => ids.includes(item.serverName) ? false : ids.push(item.serverName));
+export function trimDuplicates(items) {
+	const ids = [];
+	return items.filter(item => ids.includes(item.serverName) ? false : ids.push(item.serverName));
 }
 
-function printNames(ns,list){
-	for(let i = 0;i<list.length;i++){
+function printNames(ns, list) {
+	for (let i = 0; i < list.length; i++) {
 		ns.tprint(list[i].serverName)
 	}
 }
 
-async function buildServerMap(ns,list){
-	for(let i = 0;i<list.length;i++){
+async function buildServerMap(ns, list) {
+	for (let i = 0; i < list.length; i++) {
 		serverMap.push(list[i])
 	}
 }
 
-export async function distributeProgs(ns){
-	for(let i = 0;i<serverMap.length;i++){
-		ns.scp(hackTools.hackTools,serverMap[i].serverName)
+export async function distributeProgs(ns) {
+	for (let i = 0; i < serverMap.length; i++) {
+		ns.scp(hackTools.hackTools, serverMap[i].serverName)
 	}
 }
 
-async function buildTargetMap(ns){
-	let targets = serverMap.filter(hackLevel => hackLevel.hackingLevel <= ns.getPlayer().hacking_skill);
-	targets = targets.sort((a,b) => b.moneyMax - a.moneyMax);
+async function buildTargetMap(ns) {
+	let targets = serverMap.filter(hackLevel => hackLevel.hackingLevel <= ns.getPlayer().hacking_skill).filter(root => root.rootAccess === true);
+	targets = targets.sort((a, b) => b.moneyMax - a.moneyMax);
 	let targetCash = targets[0].moneyMax;
-	targets = targets.filter(money => money.moneyMax > targetCash/10);
-	ns.tprint(targets)
-	if(targetMap.length>0){
-		while(targetMap.length>0){
+	targets = targets.filter(money => money.moneyMax > targetCash / 10);
+	if (targetMap.length > 0) {
+		while (targetMap.length > 0) {
 			targetMap.pop();
 		}
 	}
+	for (let i = 0; i < targets.length; i++) {
+		targetMap.push(targets[i])
+	}
+}
+
+function runProgram(ns,program,target){
+	switch(program){
+            case 'BruteSSH.exe':
+                return ns.brutessh(target.serverName);
+            case 'FTPCrack.exe':
+                return ns.ftpcrack(target.serverName);
+            case 'relaySMTP.exe':
+                return ns.relaysmtp(target.serverName);
+            case 'HTTPWorm.exe':
+                return ns.httpworm(target.serverName);
+            case 'SQLInject.exe':
+                return ns.sqlinject(target.serverName);
+	}
+}
+
+function copyScripts(ns){
+	for(let i = 0;i<serverMap.length;i++){
+		ns.scp(hackTools.hackTools.weaken,serverMap[i].serverName)
+		ns.scp(hackTools.hackTools.grow,serverMap[i].serverName)
+		ns.scp(hackTools.hackTools.hack,serverMap[i].serverName)
+	}
+	allCopied = true;
 }

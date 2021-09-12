@@ -9,6 +9,5 @@ export const crackTools = [
 	'FTPCrack.exe',
 	'relaySMTP.exe',
 	'HTTPWorm.exe',
-	'SQLInject.exe',
-	'Autolink.exe'
+	'SQLInject.exe'
 ]

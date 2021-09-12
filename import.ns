@@ -1,13 +1,17 @@
 const baseUrl = 'https://raw.githubusercontent.com/adamsfrancis/BitBurner/master'
 const filesToDownload = [
   '/Classes/Server.ns',
+  '/CLasses/codingContract.ns',
   '/Managers/managerServer.ns',
   '/Managers/managerHack.ns',
   '/tools/grow.ns',
   '/tools/weaken.ns',
   '/tools/hack.ns',
   '/tools/tools.ns',
-  'startPoint.ns'
+  '/tools/serverTools.ns',
+  '/tools/constants.ns',
+  'startPoint.ns',
+  'pServer.ns'
 ]
 
 function localeHHMMSS(ms = 0) {
