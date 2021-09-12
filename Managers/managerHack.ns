@@ -1,3 +1,5 @@
+//coding solver and inspiration from @BartKoppelmans
+
 import * as hackTools from '/tools/tools.ns';
 import { portHandles } from '/tools/constants.ns';
 import * as serverUtils from '/tools/serverTools.ns'
