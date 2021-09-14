@@ -31,10 +31,12 @@ export async function main(ns) {
 async function attackServer(ns, target, usableMap) {
 	let canAttack = true;
 	let jobsRan = 0;
-	while(canAttack){
-	let hackDelay = new Date(Date.now() + 3000);
-	let growDelay = new Date(Date.now() + 4000);
-	let weakenDelay = new Date(Date.now() + 5000);
+	let hackTime = await ns.getHackTime(target.serverName)*1000;
+	let growTime = await hackTime*3.2;
+	let weakenTime = await hackTime*4;
+	let weakenDelay = new Date(Date.now() +3000)
+	let growDelay = new Date(Date.now()+(weakenTime-growTime)+2000);
+	let hackDelay = new Date(Date.now()+(weakenTime-hackTime)+1000);
 	let maxThreads = await getMaxThreads(ns, hackTools.hackTools.weaken, usableMap);
 	let hackAmount = target.moneyMax * 0.9
 	let hacksNeeded = await Math.ceil(ns.hackAnalyzeThreads(target.serverName, hackAmount));
@@ -51,47 +53,51 @@ async function attackServer(ns, target, usableMap) {
 			await ns.sleep(1)
 		}
 	}
+	while(canAttack){
+		let jobGrow = neededGrowThreads;
+		let jobHacks = hacksNeeded;
+		let jobWeaken = neededWeakenThreads;
 	for (let i = 0; i < usableMap.length; i++) {
-		if (hacksNeeded > 0) {
+		if (jobHacks > 0) {
 			let servThreads = await Math.floor(serverUtils.getRam(ns, usableMap[i]) / hackRam)
 			if (servThreads > 0) {
-				if (hacksNeeded > servThreads) {
-					ns.exec(hackTools.hackTools.hack, usableMap[i].serverName, servThreads, target.serverName, hackDelay);
-					hacksNeeded -= servThreads;
-				} else if (hacksNeeded <= servThreads) {
-					ns.exec(hackTools.hackTools.hack, usableMap[i].serverName, hacksNeeded, target.serverName, hackDelay);
-					hacksNeeded -= hacksNeeded;
+				if (jobHacks > servThreads) {
+					ns.exec(hackTools.hackTools.hack, usableMap[i].serverName, servThreads, target.serverName, hackDelay+(1000*jobsRan));
+					jobHacks -= servThreads;
+				} else if (jobHacks <= servThreads) {
+					ns.exec(hackTools.hackTools.hack, usableMap[i].serverName, jobHacks, target.serverName, hackDelay+(1000*jobsRan));
+					jobHacks -= jobHacks;
 				}
 			}
 		}
-		if (neededGrowThreads > 0) {
+		if (jobGrow > 0) {
 			let servThreads = await Math.floor(serverUtils.getRam(ns, usableMap[i]) / growRam)
 			if (servThreads > 0) {
-				if (neededGrowThreads > servThreads) {
-					ns.exec(hackTools.hackTools.grow, usableMap[i].serverName, servThreads, target.serverName, growDelay);
-					neededGrowThreads -= servThreads;
-				} else if (neededGrowThreads <= servThreads) {
-					ns.exec(hackTools.hackTools.grow, usableMap[i].serverName, neededGrowThreads, target.serverName, growDelay);
-					neededGrowThreads -= neededGrowThreads;
+				if (jobGrow > servThreads) {
+					ns.exec(hackTools.hackTools.grow, usableMap[i].serverName, servThreads, target.serverName, growDelay+(1000*jobsRan));
+					jobGrow -= servThreads;
+				} else if (jobGrow <= servThreads) {
+					ns.exec(hackTools.hackTools.grow, usableMap[i].serverName, jobGrow, target.serverName, growDelay+(1000*jobsRan));
+					jobGrow -= jobGrow;
 				}
 			}
 
 		}
-		if (neededWeakenThreads > 0) {
+		if (jobWeaken > 0) {
 			let servThreads = await Math.floor(serverUtils.getRam(ns, usableMap[i]) / weakenRam)
 			if (servThreads > 0) {
-				if (neededWeakenThreads > servThreads) {
-					ns.exec(hackTools.hackTools.weaken, usableMap[i].serverName, servThreads, target.serverName, weakenDelay);
-					neededWeakenThreads -= servThreads;
-				} else if (neededWeakenThreads <= servThreads) {
-					ns.exec(hackTools.hackTools.weaken, usableMap[i].serverName, neededWeakenThreads, target.serverName, weakenDelay);
-					neededWeakenThreads -= neededWeakenThreads;
+				if (jobWeaken > servThreads) {
+					ns.exec(hackTools.hackTools.weaken, usableMap[i].serverName, servThreads, target.serverName, weakenDelay+(1000*jobsRan));
+					jobWeaken -= servThreads;
+				} else if (jobWeaken <= servThreads) {
+					ns.exec(hackTools.hackTools.weaken, usableMap[i].serverName, jobWeaken, target.serverName, weakenDelay+(1000*jobsRan));
+					jobWeaken -= jobWeaken;
 				}
 			}
 		}
 	}
 	jobsRan +=1;
-	if(totalJobSize*1.3 >= maxThreads){canAttack=false;}
+	if(totalJobSize*1.3 >= maxThreads || jobsRan >= 10000){canAttack=false;}
 	await ns.sleep(1)
 }
 ns.tprint("Started " + jobsRan + " jobs")
