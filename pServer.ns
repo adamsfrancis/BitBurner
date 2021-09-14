@@ -12,9 +12,15 @@ export async function main(ns) {
 	if (pServList.length < 25) {
 		await buyServer(ns,canBuyRam);
 	} else {
-
-
-
+		for(let i = 0;i<pServList.length;i++){
+			//does it have any scripts running?
+			let curServ = pServList[i]
+			if(await ns.getServerUsedRam(curServ)===0 && await ns.getServerMaxRam(curServ) < canBuyRam){
+				if(await ns.deleteServer(curServ)){
+					await upgradeServer(ns,canBuyRam,curServ)
+				}
+			}
+		}
 	}
 }
 
@@ -24,4 +30,11 @@ async function buyServer(ns,ramtobuy) {
 		ns.scp(hackTools.weaken, newServ)
 		ns.scp(hackTools.grow, newServ)
 		ns.scp(hackTools.hack, newServ)
+}
+async function upgradeServer(ns,ramtobuy,server) {
+	
+	let newServ = ns.purchaseServer(server, ramtobuy);
+	ns.scp(hackTools.weaken, newServ)
+	ns.scp(hackTools.grow, newServ)
+	ns.scp(hackTools.hack, newServ)
 }
