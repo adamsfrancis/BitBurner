@@ -35,8 +35,8 @@ async function attackServer(ns, target, usableMap) {
 	let growTime = await hackTime*3.2;
 	let weakenTime = await hackTime*4;
 	let weakenDelay = new Date(Date.now() +3000)
-	let growDelay = new Date(Date.now()+(weakenTime-growTime)+2000);
-	let hackDelay = new Date(Date.now()+(weakenTime-hackTime)+1000);
+	let growDelay = new Date(Date.now()+(weakenTime-growTime)+2999);
+	let hackDelay = new Date(Date.now()+(weakenTime-hackTime)+2998);
 	let maxThreads = await getMaxThreads(ns, hackTools.hackTools.weaken, usableMap);
 	let hackAmount = target.moneyMax * 0.9
 	let hacksNeeded = await Math.ceil(ns.hackAnalyzeThreads(target.serverName, hackAmount));
@@ -62,10 +62,10 @@ async function attackServer(ns, target, usableMap) {
 			let servThreads = await Math.floor(serverUtils.getRam(ns, usableMap[i]) / hackRam)
 			if (servThreads > 0) {
 				if (jobHacks > servThreads) {
-					ns.exec(hackTools.hackTools.hack, usableMap[i].serverName, servThreads, target.serverName, hackDelay+(1000*jobsRan));
+					ns.exec(hackTools.hackTools.hack, usableMap[i].serverName, servThreads, target.serverName, hackDelay+(4*jobsRan));
 					jobHacks -= servThreads;
 				} else if (jobHacks <= servThreads) {
-					ns.exec(hackTools.hackTools.hack, usableMap[i].serverName, jobHacks, target.serverName, hackDelay+(1000*jobsRan));
+					ns.exec(hackTools.hackTools.hack, usableMap[i].serverName, jobHacks, target.serverName, hackDelay+(4*jobsRan));
 					jobHacks -= jobHacks;
 				}
 			}
@@ -74,10 +74,10 @@ async function attackServer(ns, target, usableMap) {
 			let servThreads = await Math.floor(serverUtils.getRam(ns, usableMap[i]) / growRam)
 			if (servThreads > 0) {
 				if (jobGrow > servThreads) {
-					ns.exec(hackTools.hackTools.grow, usableMap[i].serverName, servThreads, target.serverName, growDelay+(1000*jobsRan));
+					ns.exec(hackTools.hackTools.grow, usableMap[i].serverName, servThreads, target.serverName, growDelay+(4*jobsRan));
 					jobGrow -= servThreads;
 				} else if (jobGrow <= servThreads) {
-					ns.exec(hackTools.hackTools.grow, usableMap[i].serverName, jobGrow, target.serverName, growDelay+(1000*jobsRan));
+					ns.exec(hackTools.hackTools.grow, usableMap[i].serverName, jobGrow, target.serverName, growDelay+(4*jobsRan));
 					jobGrow -= jobGrow;
 				}
 			}
@@ -87,10 +87,10 @@ async function attackServer(ns, target, usableMap) {
 			let servThreads = await Math.floor(serverUtils.getRam(ns, usableMap[i]) / weakenRam)
 			if (servThreads > 0) {
 				if (jobWeaken > servThreads) {
-					ns.exec(hackTools.hackTools.weaken, usableMap[i].serverName, servThreads, target.serverName, weakenDelay+(1000*jobsRan));
+					ns.exec(hackTools.hackTools.weaken, usableMap[i].serverName, servThreads, target.serverName, weakenDelay+(4*jobsRan));
 					jobWeaken -= servThreads;
 				} else if (jobWeaken <= servThreads) {
-					ns.exec(hackTools.hackTools.weaken, usableMap[i].serverName, jobWeaken, target.serverName, weakenDelay+(1000*jobsRan));
+					ns.exec(hackTools.hackTools.weaken, usableMap[i].serverName, jobWeaken, target.serverName, weakenDelay+(4*jobsRan));
 					jobWeaken -= jobWeaken;
 				}
 			}
@@ -100,7 +100,7 @@ async function attackServer(ns, target, usableMap) {
 	if(totalJobSize*1.3 >= maxThreads || jobsRan >= 10000){canAttack=false;}
 	await ns.sleep(1)
 }
-ns.tprint("Started " + jobsRan + " jobs")
+ns.tprint("Started " + jobsRan + " jobs in: " + (Date.now()-weakenDelay-3000)/1000 + " seconds.")
 	await ns.sleep((ns.getWeakenTime(target.serverName) + 6) * 1000)
 
 }
