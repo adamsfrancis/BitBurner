@@ -3,3 +3,16 @@ export const portHandles = {
 	targetMap:2,
 	serverMap:3
 }
+export const weakenChange = 0.05
+export const hackChange = 0.002
+export const growChange = 0.004
+export const growRam = 1.75
+export const hackRam = 1.70
+export const weakenRam = 1.75
+
+export const generalActions = ["Training","Field Analysis","Recruitment","Diplomacy","Hyperbolic Regeneration Chamber"];
+export const contractActions = ["Tracking","Bounty Hunter","Retirement"];
+export const operationActions = ["Investigation","Undercover Operation","Sting Operation","Raid","Stealth Retirement Operation","Assassination"]
+export const blackOpActions = ["Operation Typhoon","Operation Zero","Operation X","Operation Titan","Operation Ares","Operation Archangel","Operation Juggernaut","Operation Red Dragon","Operation K","Operation Deckard","Operation Tyrell","Operation Wallace","Operation Shoulder of Orion","Operation Hyron","Operation Morpheus","Operation Ion Storm","Operation Annihilus","Operation Ultron","Operation Centurion","Operation Vindictus","Operation Daedalus"]
+export const allCities = ["Aevum","Chongqing","Ishima","New Tokyo","Sector-12","Volhaven"]
+export const allSkills = ["Blade's Intuition","Cloak","Short-Circuit","Digital Observer","Tracer","Overclock","Reaper","Evasive System","Datamancer","Cyber's Edge","Hands of Midas","Hyperdrive"]

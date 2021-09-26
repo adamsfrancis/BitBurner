@@ -1,0 +1,16 @@
+function getStamina(ns){
+    let currentStamina = ns.bladeburner.getStamina();
+    return (currentStamina[0]/currentStamina[1])*100;
+}
+
+export function isTired(ns){
+    if(getStamina(ns) <= 50){
+        return true;
+    } else {
+        return false;
+    }
+}
+
+async function recoverStamina(ns){
+
+}

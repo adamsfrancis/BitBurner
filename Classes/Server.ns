@@ -1,14 +1,35 @@
 export class Server{
     constructor(ns,server,parent){
-        this.serverName = server;
+        this.serverCharacteristics = ns.getServer(server)
+        this.serverName = this.serverCharacteristics.hostname;
         this.serverParent = parent;
-        this.portsRequired = ns.getServerNumPortsRequired(server),
-        this.hackingLevel = ns.getServerRequiredHackingLevel(server),
-        this.moneyMax = ns.getServerMaxMoney(server),
-        this.growthRate = ns.getServerGrowth(server),
-        this.minSecurityLevel = ns.getServerMinSecurityLevel(server),
-        this.ramMax = ns.getServerMaxRam(server),
+        this.portsRequired = this.serverCharacteristics.numOpenPortsRequired,
+        this.hackingLevel = this.serverCharacteristics.requiredHackingSkill,
+        this.moneyMax = this.serverCharacteristics.moneyMax,
+        this.moneyAvailable = this.serverCharacteristics.moneyAvailable,
+        this.growthRate = this.serverCharacteristics.serverGrowth,
+        this.minSecurityLevel = this.serverCharacteristics.minDifficulty,
+        this.ramMax = this.serverCharacteristics.maxRam,
+        this.ramUsed = this.serverCharacteristics.ramUsed,
         this.files = ns.ls(server),
-        this.rootAccess = ns.hasRootAccess(server)
+        this.rootAccess = this.serverCharacteristics.hasAdminRights,
+        this.ftpPortOpen = this.serverCharacteristics.ftpPortOpen,
+        this.sshPortOpen = this.serverCharacteristics.sshPortOpen,
+        this.httpPortOpen = this.serverCharacteristics.httpPortOpen,
+        this.smtpPortOpen = this.serverCharacteristics.smtpPortOpen,
+        this.sqlPortOpen = this.serverCharacteristics.sqlPortOpen,
+        this.cpuCores = this.serverCharacteristics.cpuCores,
+        this.hackDifficulty = this.serverCharacteristics.hackDifficulty,
+        this.prepped = this.isPrepped,
+        this.timeGrow = ns.formulas.basic.growTime(this.serverName,ns.getPlayer()),
+        this.timeHack = ns.formulas.basic.hackTime(this.serverName,ns.getPlayer()),
+        this.timeWeaken = ns.formulas.basic.weakenTime(this.serverName,ns.getPlayer())
+    }
+    isPrepped() {
+        if(this.hackDifficulty === this.minSecurityLevel && this.moneyAvailable === this.moneyMax){
+            return true;
+        } else {
+            return false;
+        }
     }
 }

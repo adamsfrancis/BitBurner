@@ -1,40 +1,51 @@
 import { hackTools } from '/tools/tools.ns'
 const costPerGig = 55000;
+const totalMaxRam = 1048576;
+let maxedOut = [];
 
 export async function main(ns) {
-	//lets get our current list
-	let pServList = await ns.getPurchasedServers();
-	//how much can we spend?
-	let availFunds = (ns.getPlayer().money * 0.1);
-	let canBuyRam = Math.pow(2,Math.floor(Math.log2(availFunds/costPerGig)))
-	//do we need to buy or upgrade?
+	do {
+		maxedOut = [];
+		//lets get our current list
+		let pServList = await ns.getPurchasedServers();
+		//how much can we spend?
+		let availFunds = (ns.getPlayer().money * 0.1);
+		let canBuyRam = Math.pow(2, Math.floor(Math.log2(availFunds / costPerGig)))
+		if(canBuyRam > totalMaxRam){canBuyRam = totalMaxRam;}
+		//do we need to buy or upgrade?
 
-	if (pServList.length < 25) {
-		await buyServer(ns,canBuyRam);
-	} else {
-		for(let i = 0;i<pServList.length;i++){
-			//does it have any scripts running?
-			let curServ = pServList[i]
-			if(await ns.getServerUsedRam(curServ)===0 && await ns.getServerMaxRam(curServ) < canBuyRam){
-				if(await ns.deleteServer(curServ)){
-					await upgradeServer(ns,canBuyRam,curServ)
+		if (canBuyRam > 2) {
+			if (pServList.length < 25) {
+				await buyServer(ns, canBuyRam, "Bought ");
+			} else {
+				for (let i = 0; i < pServList.length; i++) {
+					//does it have any scripts running?
+					let curServ = pServList[i]
+					availFunds = await (ns.getPlayer().money * 0.1);
+					let curUsed = await ns.getServerUsedRam(curServ)
+					let curMax = await ns.getServerMaxRam(curServ)
+					if (curUsed === 0 && curMax < canBuyRam && curMax < totalMaxRam) {
+						let deletedServer = await ns.deleteServer(curServ)
+						if (deletedServer) {
+							await buyServer(ns, canBuyRam, "Upgraded ")
+						}
+					} else if (curMax === totalMaxRam) {
+						maxedOut += 1;
+					}
 				}
 			}
 		}
-	}
+		await ns.sleep(10000)
+	} while (maxedOut.length < 25)
 }
 
-async function buyServer(ns,ramtobuy) {
-	
-		let newServ = ns.purchaseServer("Flenserv", ramtobuy);
+async function buyServer(ns, ramtobuy, operation) {
+
+	let newServ = await ns.purchaseServer("Flenserv", ramtobuy);
+	if (newServ !== '') {
 		ns.scp(hackTools.weaken, newServ)
 		ns.scp(hackTools.grow, newServ)
 		ns.scp(hackTools.hack, newServ)
-}
-async function upgradeServer(ns,ramtobuy,server) {
-	
-	let newServ = ns.purchaseServer(server, ramtobuy);
-	ns.scp(hackTools.weaken, newServ)
-	ns.scp(hackTools.grow, newServ)
-	ns.scp(hackTools.hack, newServ)
+		ns.tprintf(operation + newServ + ", RAM: " + ramtobuy)
+	}
 }
