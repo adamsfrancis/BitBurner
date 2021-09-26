@@ -1,0 +1,27 @@
+/*
+bladeburner.startAction("Contracts", "Tracking"); // returns: true
+bladeburner.stopBladeburnerAction();
+action = bladeburner.getCurrentAction(); returns object with type and name attributes, if nothing type is idle
+bladeburner.getActionTime("Contracts", "Tracking"); // returns: 4 returns in seconds
+bladeburner.getActionEstimatedSuccessChance("Contracts", "Tracking"); // returns: [.3, .6]
+bladeburner.getActionRepGain("Contracts", "Tracking"); // returns: 341  Average Bladeburner reputation gain for successfully completing the specified action
+bladeburner.getActionCountRemaining("Contracts", "Tracking"); // returns: 124 -1 for invalid
+bladeburner.getBlackOpRank("Operation Typhoon"); // returns: 2500
+bladeburner.getSkillPoints(); // returns: 1630
+bladeburner.getSkillLevel("Overclock"); // returns: 90
+bladeburner.getSkillUpgradeCost("Overclock"); // returns: 120
+bladeburner.upgradeSkill("Overclock"); // returns: true
+bladeburner.getCityEstimatedPopulation("Sector-12"); // returns: 1240000
+bladeburner.getCityEstimatedCommunities("Sector-12"); // returns: 76
+bladeburner.getCityChaos("Sector-12"); // returns: 3800.1
+bladeburner.getCity(); // returns: "Sector-12"
+bladeburner.switchCity("Sector-12"); // returns: true
+res = bladeburner.getStamina(); Array with two elements [Current stamina, Max stamina]
+percentage = res[0] / res[1];
+*/
+import {generalActions,contractActions,operationActions,blackOpActions,allCities,allSkills} from '/tools/constants.ns'
+import { isTired, } from '/tools/toolsBladeBurner.ns'
+
+export async function main(ns){
+
+}
