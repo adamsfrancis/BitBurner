@@ -4,44 +4,44 @@ import { Server } from '/Classes/Server.ns';
 import * as constantArgs from '/tools/constants.ns'
 //import { CodingContract } from '/Classes/codingContract.ns'
 
-//primary server map, has server objects
-export const serverMap = [];
-//usable servers map
-export const usableMap = [];
-
-
 export async function main(ns) {
-	ns.tprint("It started")
 	//build primary server map and copy scripts
-	await serverUtils.buildServerMap(ns);
-	ns.tprint("Made it through building the map")
+	await serverUtils.updateMap(ns);
+	await serverUtils.copyScripts(ns);
 	while (true) {
-		ns.tprint("Made it into the while statement in main")
-		let optimalTarget = serverUtils.getTarget(ns)
-		ns.tprint("Found a target: " +optimalTarget.serverName)
-		if (optimalTarget.isPrepped) {
+		if (!(await ns.isRunning('pServer.ns', "home"))) { await ns.run('pServer.ns', 1); }
+		await serverUtils.updateMap(ns);
+		let optimalTarget = await serverUtils.getTarget(ns);
+		if (await serverUtils.isPrepped(ns, optimalTarget) === true) {
 			ns.tprint("Attacking " + optimalTarget.serverName);
 			await buildAttackJob(ns, optimalTarget)
 		} else {
-			let prepList = serverUtils.getPrepMap(ns);
-			let maxWait = prepList.reduce((a,b) => a.timeWeaken > b.timeWeaken ? a:b,1).timeWeaken
-			for(let i = 0;i<prepList.length;i++){
-				if((serverUtils.getAvailThreads(ns)/serverUtils.getMaxThreads(ns)) <= 0.1){
+			let maxWait = 0;
+			for (let i = 0; i < serverUtils.prepMap.length; i++) {
+				ns.tprint("Where am I getting stuck?!?!")
+				let availThread = await serverUtils.getAvailThreads(ns);
+				let maxThread = await serverUtils.getMaxThreads(ns)
+				if ((availThread / maxThread) <= 0.1) {
 					continue;
 				}
-				buildPrepJob(ns,prepList[i])
+				let weakenTimer = await serverUtils.getWeakenTime(ns, serverUtils.prepMap[i].serverName)
+				if (weakenTimer > maxWait) {
+					maxWait = weakenTimer;
+				}
+				ns.tprint("Sending " + serverUtils.prepMap[i].serverName + " for prep.")
+				await buildPrepJob(ns, serverUtils.prepMap[i])
 			}
-			await ns.sleep(maxWait)
+			ns.tprint("Will wake up at: " + new Date(Date.now() + maxWait * 1000))
+			await ns.sleep(maxWait * 1000)
 		}
 		await ns.sleep(100000)
-		//await solveContracts(ns, serverMap)
+		//await solveContracts(ns, serverUtils.serverMap)
 	}
 }
 
 async function updateArrays(ns) {
 	await serverUtils.crackServers(ns);
 	await serverUtils.updateMap(ns);
-	await serverUtils.buildUsableMap(ns);
 }
 async function buildAttackJob(ns, target) {
 	//what makes an attack?
@@ -53,20 +53,21 @@ async function buildAttackJob(ns, target) {
 	let hacksNeeded = Math.floor(0.1 / ns.formulas.basic.hackPercent(targetInfo, playerInfo));
 	//how much will we actually steal?
 	let hackMoneyGain = ns.formulas.basic.hackPercent(targetInfo, playerInfo) * hacksNeeded;
+	ns.tprint(hackMoneyGain)
 	//how many grows do we need to rebuild after that?
-	let growsNeeded = Math.ceil(ns.growthAnalyze(target.serverName, 1 + hackMoneyGain) + 1);
+	let growsNeeded = Math.ceil(ns.growthAnalyze(target.serverName, Math.ceil(1/(1 - hackMoneyGain)) + 1));
 	//how many weaken threads do we need to cover for hack+grow operations?
 	let weakensNeeded = Math.ceil(((hacksNeeded * 0.002) + (growsNeeded * 0.004)) / 0.05) + 1;
 
 	//what server resources are required, and what do we have?
 	let jobThreads = hacksNeeded + growsNeeded + weakensNeeded;
-	let maxThreads = await getAvailThreads(ns)
+	let maxThreads = await serverUtils.getAvailThreads(ns)
 
 	//now that we have an ideal attack, what if we can't fit an ideal attack?
 	while (maxThreads < jobThreads) {
 		hacksNeeded -= 1;
 		hackMoneyGain = await ns.formulas.basic.hackPercent(targetInfo, playerInfo) * hacksNeeded;
-		growsNeeded = await Math.ceil(ns.growthAnalyze(target.serverName, 1 + hackMoneyGain) + 1);
+		growsNeeded = await Math.ceil(ns.growthAnalyze(target.serverName, Math.ceil(1 / hackMoneyGain) + 1));
 		weakensNeeded = await Math.ceil(((hacksNeeded * 0.002) + (growsNeeded * 0.004)) / 0.05) + 1;
 		jobThreads = hacksNeeded + growsNeeded + weakensNeeded;
 	}
@@ -75,46 +76,41 @@ async function buildAttackJob(ns, target) {
 }
 
 async function buildPrepJob(ns, target) {
-	//what makes an attack?
-	//we need a target
-	let targetInfo = ns.getServer(target.serverName)
-	let playerInfo = await ns.getPlayer();
-
 	//how many grows do we need to rebuild after that?
-	let growsNeeded = Math.ceil(ns.growthAnalyze(target.serverName, target.moneyMax/target.moneyAvailable));
+	let growsNeeded = Math.ceil(ns.growthAnalyze(target.serverName, Math.ceil(target.moneyMax / target.moneyAvailable)));
 	//how many weaken threads do we need to cover for hack+grow operations?
-	let weakensNeeded = Math.ceil(((target.hackDifficulty-target.minSecurityLevel)+(growsNeeded*constantArgs.growChange))/constantArgs.weakenChange);
+	let weakensNeeded = await Math.ceil(((target.hackDifficulty - target.minSecurityLevel) + (growsNeeded * constantArgs.growChange)) / constantArgs.weakenChange);
 
 	//what server resources are required, and what do we have?
 	let jobThreads = growsNeeded + weakensNeeded;
-	let maxThreads = await getAvailThreads(ns)
+	let maxThreads = await serverUtils.getAvailThreads(ns)
 
 	//now that we have an ideal attack, what if we can't fit an ideal attack?
 	while (maxThreads < jobThreads) {
-		if(growsNeeded >= 0){
-		growsNeeded -= 1
-		weakensNeeded = Math.ceil(((target.hackDifficulty-target.minSecurityLevel)+(growsNeeded*constantArgs.growChange))/constantArgs.weakenChange);
-		jobThreads = growsNeeded + weakensNeeded;
+		if (growsNeeded >= 0) {
+			growsNeeded -= 1
+			weakensNeeded = await Math.ceil(((target.hackDifficulty - target.minSecurityLevel) + (growsNeeded * constantArgs.growChange)) / constantArgs.weakenChange);
+			jobThreads = growsNeeded + weakensNeeded;
 		} else {
 			weakensNeeded = maxThreads
 		}
 	}
+	let runsToDo = 1;
 	//put the prep job in place
-	for (let i = 0;i<runsToDo;i++) {
+	for (let i = 0; i < runsToDo; i++) {
 		let threadArr = [
-			{ jobThreads: weakenThreads, jobDelay: target.timeWeaken, jobRAM: 1.75, tool: hackTools.hackTools.weaken },
-			{ jobThreads: growThreads, jobDelay: target.timeGrow, jobRAM: 1.75, tool: hackTools.hackTools.grow },
-			{ jobThreads: hackThreads, jobDelay: target.timeHack, jobRAM: 1.7, tool: hackTools.hackTools.hack }
+			{ jobThreads: weakensNeeded, jobDelay: serverUtils.getWeakenTime(ns, target.serverName), jobRAM: 1.75, tool: hackTools.hackTools.weaken },
+			{ jobThreads: growsNeeded, jobDelay: serverUtils.getGrowTime(ns, target.serverName), jobRAM: 1.75, tool: hackTools.hackTools.grow },
 		]
 		for (let job = 0; job < threadArr.length; job++) {
 			await updateArrays(ns);
-			for (let serv = 0; serv < usableMap.length; serv++) {
-				let servThreads = await Math.floor((usableMap[serv].ramMax - usableMap[serv].ramUsed) / threadArr[job].jobRAM);
+			for (let serv = 0; serv < serverUtils.usableMap.length; serv++) {
+				let servThreads = await Math.floor((serverUtils.usableMap[serv].ramMax - serverUtils.usableMap[serv].ramUsed) / threadArr[job].jobRAM);
 				if (servThreads === 0 || threadArr[job].jobThreads === 0) {
 					continue;
 				}
 				let schedThreads = (threadArr[job].jobThreads > servThreads) ? servThreads : threadArr[job].jobThreads;
-				ns.exec(threadArr[job].tool, usableMap[serv].serverName, schedThreads, target.serverName, new Date(waveEndTime),threadArr[job].jobDelay);
+				ns.exec(threadArr[job].tool, serverUtils.usableMap[serv].serverName, schedThreads, target.serverName, new Date(Date.now()), 0);
 				threadArr[job].jobThreads -= schedThreads;
 			}
 		}
@@ -124,47 +120,54 @@ async function buildPrepJob(ns, target) {
 
 async function runAttack(ns, threadsW, threadsG, threadsH, threadsJ, target) {
 	//with a build attack, what information do we need to wave it through?
-	let waveEndTime = new Date(Date.now() + target.timeWeaken + 10000)
+	let waveWeakenTime = await serverUtils.getWeakenTime(ns, target.serverName)
+	let waveEndTime = new Date(Date.now() + (waveWeakenTime * 1000) + 10000)
 	let weakenThreads = threadsW;
 	let growThreads = threadsG;
 	let hackThreads = threadsH;
 	let jobThreads = threadsJ;
-	let runsToDo = Math.floor(await getAvailThreads(ns)/jobThreads);
+	let availThreads = await serverUtils.getAvailThreads(ns);
+	let runsToDo = Math.floor(availThreads / jobThreads);
+	let largestDelay = 0;
 
-	for (let i = 0;i<runsToDo;i++) {
+	for (let i = 0; i < runsToDo; i++) {
 		let threadArr = [
-			{ jobThreads: weakenThreads, jobDelay: target.timeWeaken, jobRAM: 1.75, tool: hackTools.hackTools.weaken },
-			{ jobThreads: growThreads, jobDelay: target.timeGrow, jobRAM: 1.75, tool: hackTools.hackTools.grow },
-			{ jobThreads: hackThreads, jobDelay: target.timeHack, jobRAM: 1.7, tool: hackTools.hackTools.hack }
+			{ jobThreads: weakenThreads, jobDelay: serverUtils.getWeakenTime(ns, target.serverName), jobRAM: 1.75, tool: hackTools.hackTools.weaken },
+			{ jobThreads: growThreads, jobDelay: serverUtils.getGrowTime(ns, target.serverName), jobRAM: 1.75, tool: hackTools.hackTools.grow },
+			{ jobThreads: hackThreads, jobDelay: serverUtils.getHackTime(ns, target.serverName), jobRAM: 1.7, tool: hackTools.hackTools.hack }
 		]
 		for (let job = 0; job < threadArr.length; job++) {
-			await updateArrays(ns);
-			for (let serv = 0; serv < usableMap.length; serv++) {
-				let servThreads = await Math.floor((usableMap[serv].ramMax - usableMap[serv].ramUsed) / threadArr[job].jobRAM);
+			await serverUtils.updateMap(ns);
+			waveEndTime = new Date(waveEndTime.getTime() + 800);
+			for (let serv = 0; serv < serverUtils.usableMap.length; serv++) {
+				let servThreads = await Math.floor((serverUtils.usableMap[serv].ramMax - serverUtils.usableMap[serv].ramUsed) / threadArr[job].jobRAM);
 				if (servThreads === 0 || threadArr[job].jobThreads === 0) {
 					continue;
 				}
 				let schedThreads = (threadArr[job].jobThreads > servThreads) ? servThreads : threadArr[job].jobThreads;
-				ns.exec(threadArr[job].tool, usableMap[serv].serverName, schedThreads, target.serverName, new Date(waveEndTime),threadArr[job].jobDelay);
+				let thisJobDelay = await threadArr[job].jobDelay;
+				ns.exec(threadArr[job].tool, serverUtils.usableMap[serv].serverName, schedThreads, target.serverName, waveEndTime, await threadArr[job].jobDelay);
+				if (thisJobDelay > largestDelay) { largestDelay = thisJobDelay; }
 				threadArr[job].jobThreads -= schedThreads;
+
 			}
 		}
 		await ns.sleep(1)
 	}
-	ns.tprint("Started " + runsToDo + " jobs, going to sleep until " + waveEndTime);
-	await ns.sleep(new Date(waveFinish - Date.now()) + 6000)
+	ns.tprint("Started " + runsToDo + " jobs, going to sleep until " + (waveEndTime + 20000));
+	await ns.sleep(waveEndTime - Date.now() + 20000)
 }
 
 
-// async function solveContracts(ns, serverMap) {
-// 	if (serverMap.length > 0) {
-// 		for (let i = 0; i < serverMap.length; i++) {
-// 			const serverContracts = await ns.ls(serverMap[i].serverName, '.cct');
+// async function solveContracts(ns, serverUtils.serverMap) {
+// 	if (serverUtils.serverMap.length > 0) {
+// 		for (let i = 0; i < serverUtils.serverMap.length; i++) {
+// 			const serverContracts = await ns.ls(serverUtils.serverMap[i].serverName, '.cct');
 // 			if (serverContracts.length === 0) {
 // 				continue;
 // 			}
 // 			for (const serverContract of serverContracts) {
-// 				const contract = new CodingContract(ns, serverContract, serverMap[i].serverName)
+// 				const contract = new CodingContract(ns, serverContract, serverUtils.serverMap[i].serverName)
 // 				const solution = findSolution(ns, contract);
 // 				const isSuccessful = contract.attempt(ns, solution);
 // 				if (isSuccessful) {
